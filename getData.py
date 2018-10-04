@@ -93,6 +93,27 @@ class Items(object):
 
                     self.items[context[0]] = Item(context[0], context[1], context[2], context[3], context[4], context[5:])
 
+class Relations(object):
+    def __init__(self, path):
+        self.relation = None
+        self.path = path + 'u.data'
+
+    def setRelations(self, n_items, n_users):
+        self.relation = np.zeros((n_users,n_items))
+        
+        if checkFileExists(self.path):
+            with open(self.path) as file:
+                for line in file:
+                    context = line.strip().split('\t')[:3]
+                    context = [ int(c) for c in context ]
+
+                    self.relation[context[0]-1,context[1]-1] = context[2]
+
+    def getNeighbour(self,uid,user = True):
+        if user:
+            return np.argwhere(self.relation[uid,:] > 0)
+        else:
+            return np.argwhere(self.relation[:,uid] > 0)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -104,3 +125,8 @@ if __name__ == '__main__':
 
     i = Items(args.path)
     print(len(i.items))
+
+    r = Relations(args.path)
+    r.setRelations(len(i.items),len(u.users))
+
+    print(r.getNeighbour(305))
